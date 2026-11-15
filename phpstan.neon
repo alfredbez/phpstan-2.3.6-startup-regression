@@ -1,0 +1,7 @@
+parameters:
+    level: 6
+    # One cache directory per PHPStan build, so the builds do not throw away
+    # each other's result cache. The scripts set CACHE_NAME.
+    tmpDir: tmp/%env.CACHE_NAME%
+    paths:
+        - src/Small

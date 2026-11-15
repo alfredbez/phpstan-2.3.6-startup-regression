@@ -1,0 +1,14 @@
+{
+    "name": "example/phpstan-startup-regression",
+    "description": "Reproducer: PHPStan 2.3.6 is slower than 2.3.5 when only a small part of a big project is analysed",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

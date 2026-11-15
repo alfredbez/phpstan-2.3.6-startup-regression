@@ -1,0 +1,7 @@
+/src/
+/tmp/
+/tools/
+/vendor/
+/results/
+/composer.lock
+/phpstan-src
