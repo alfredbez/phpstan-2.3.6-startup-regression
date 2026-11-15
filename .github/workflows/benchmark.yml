@@ -34,6 +34,8 @@ jobs:
 
       - name: Compare 2.3.5 and 2.3.6
         run: bin/compare.sh 10 2.3.5 2.3.6
+        env:
+          DROP_CACHES: 1
 
   bisect:
     name: git bisect in phpstan-src

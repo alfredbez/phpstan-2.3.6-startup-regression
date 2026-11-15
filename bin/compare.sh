@@ -55,6 +55,18 @@ echo
 echo "== Cold: tmpDir deleted before each run"
 hyperfine --runs "$runs" --export-markdown results/cold.md --export-json results/cold.json "${cold[@]}"
 
+# Like a CI job on a new machine: the result cache is warm, but the project
+# files are not in the OS file cache. Linux only, needs sudo.
+if [ "${DROP_CACHES:-0}" = 1 ]; then
+    echo
+    echo "== Warm result cache, OS file cache dropped before each run"
+    dropped=()
+    for v in "${versions[@]}"; do
+        dropped+=(--prepare "sync; echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null" --command-name "$v warm, no OS file cache" "CACHE_NAME=warm-$v php tools/phpstan-$v.phar analyse -c phpstan.neon --no-progress")
+    done
+    hyperfine --runs "$runs" --export-markdown results/dropped.md --export-json results/dropped.json "${dropped[@]}"
+fi
+
 {
     echo "## PHPStan ${versions[*]}"
     echo
@@ -68,6 +80,12 @@ hyperfine --runs "$runs" --export-markdown results/cold.md --export-json results
     echo
     cat results/cold.md
     echo
+    if [ -f results/dropped.md ]; then
+        echo "### Warm result cache, OS file cache dropped before each run"
+        echo
+        cat results/dropped.md
+        echo
+    fi
     echo "### PHPStan's own output with -vv (warm)"
     echo
     for v in "${versions[@]}"; do
