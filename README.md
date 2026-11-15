@@ -33,16 +33,29 @@ summaries of the latest run in the Actions tab.
 
 ## Results
 
-See the latest run in the Actions tab for the numbers on a GitHub runner. On a
-laptop (PHP 8.5, 40,000 classes, 10 warm runs) we got:
+From [this run](https://github.com/alfredbez/phpstan-2.3.6-startup-regression/actions/runs/43768242498)
+on a GitHub runner (PHP 8.4, mean of 10 runs, only the 10 files in
+`src/Small` are analysed):
 
-| | 2.3.5 | 2.3.6 |
-| --- | ---: | ---: |
-| Warm, nothing changed | 1.5 s | 3.5 s |
-| Cold, tmpDir deleted | 2.6 s | 5.8 s |
+| Autoloaded classes | Case | 2.3.5 | 2.3.6 |
+| ---: | --- | ---: | ---: |
+| 10,000 | Warm, nothing changed | 0.98 s | 1.11 s |
+| 10,000 | Cold, tmpDir deleted | 1.81 s | 1.94 s |
+| 10,000 | Warm, OS file cache dropped | 1.17 s | 2.02 s |
+| 40,000 | Warm, nothing changed | 0.97 s | 1.41 s |
+| 40,000 | Cold, tmpDir deleted | 1.77 s | 2.25 s |
+| 40,000 | Warm, OS file cache dropped | 1.12 s | 3.22 s |
 
-The difference grows with the number and the size of the files in the
-autoload section that are not analysed.
+"OS file cache dropped" is like a CI job on a new machine: the result cache is
+restored, but the project files were not read yet. 2.3.5 does not read the
+files in `src/Lib` at all, 2.3.6 reads all of them.
+
+The bisect job finds the same commit every time: from source, the parent
+commit takes 0.69 s and the commit 1.10 s (fastest of 5 warm runs, 40,000
+classes).
+
+On a laptop with slower file access the difference is larger (40,000 classes,
+warm: 1.5 s with 2.3.5, 3.5 s with 2.3.6).
 
 ## What we think happens
 
