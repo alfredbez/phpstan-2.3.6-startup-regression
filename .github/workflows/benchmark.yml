@@ -1,0 +1,59 @@
+name: Benchmark
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: 2.3.5 vs 2.3.6, ${{ matrix.classes }} autoloaded classes
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        classes: [10000, 40000]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Install hyperfine
+        run: sudo apt-get update -q && sudo apt-get install -y -q hyperfine
+
+      - name: Generate the project
+        run: |
+          php generate.php ${{ matrix.classes }}
+          composer install --no-interaction --no-progress
+
+      - name: Compare 2.3.5 and 2.3.6
+        run: bin/compare.sh 10 2.3.5 2.3.6
+
+  bisect:
+    name: git bisect in phpstan-src
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      - name: Install hyperfine
+        run: sudo apt-get update -q && sudo apt-get install -y -q hyperfine
+
+      - name: Generate the project
+        run: |
+          php generate.php 40000
+          composer install --no-interaction --no-progress
+
+      - name: Bisect between 2.3.5 and 2.3.6
+        run: bin/bisect.sh 2.3.5 2.3.6
